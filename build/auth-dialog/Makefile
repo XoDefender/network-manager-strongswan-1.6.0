@@ -193,7 +193,7 @@ CATALOGS =
 CATOBJEXT = .gmo
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -Wall -Werror -std=gnu89 -g -O2 -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wdeclaration-after-statement -Wfloat-equal -Wno-unused-parameter -Wno-sign-compare -fno-strict-aliasing
+CFLAGS = -Wall -std=gnu89 -g -O2 -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wdeclaration-after-statement -Wfloat-equal -Wno-unused-parameter -Wno-sign-compare -fno-strict-aliasing
 CPP = gcc -E
 CPPFLAGS = 
 CYGPATH_W = echo

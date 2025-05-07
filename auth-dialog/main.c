@@ -166,6 +166,9 @@ static gboolean get_secrets(const char *type, const char *cert_source, const cha
 		g_key_file_set_string (keyfile, UI_KEYFILE_GROUP, "Description", prompt);
 		g_key_file_set_string (keyfile, UI_KEYFILE_GROUP, "Title", _("Authenticate VPN"));
 
+		// TODO:Kirill - need to read data from plugin editor
+		// and fill keyfile according to it - pass cert to show 
+		// nma cert dialog
 		keyfile_add_entry_info (keyfile, "password", pw ?: "", _("Password:"), TRUE, allow_interaction);
 
 		keyfile_print_stdout (keyfile);
