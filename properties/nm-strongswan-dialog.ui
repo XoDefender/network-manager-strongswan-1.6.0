@@ -464,6 +464,21 @@
                 <property name="top-attach">7</property>
               </packing>
             </child>
+             <child>
+              <object class="GtkCheckButton" id="ask-cert">
+                <property name="label" translatable="yes">_Ask certificate on connect</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">False</property>
+                <property name="hexpand">True</property>
+                <property name="use-underline">True</property>
+                <property name="draw-indicator">True</property>
+              </object>
+              <packing>
+                <property name="left-attach">1</property>
+                <property name="top-attach">8</property>
+              </packing>
+            </child>
             <child>
               <object class="GtkLabel" id="local-identity-label">
                 <property name="visible">True</property>

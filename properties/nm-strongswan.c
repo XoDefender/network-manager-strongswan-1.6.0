@@ -181,6 +181,7 @@ static void update_cert_fields (StrongswanPluginUiWidgetPrivate *priv, gboolean 
 
 	gtk_widget_set_sensitive (GTK_WIDGET (gtk_builder_get_object (priv->builder, "cert-label")), enabled);
 	gtk_widget_set_sensitive (GTK_WIDGET (gtk_builder_get_object (priv->builder, "cert-combo")), enabled);
+	gtk_widget_set_sensitive (GTK_WIDGET (gtk_builder_get_object (priv->builder, "ask-cert")), enabled);
 	gtk_widget_set_sensitive (GTK_WIDGET (gtk_builder_get_object (priv->builder, "usercert-label")), enabled && cert);
 	gtk_widget_set_sensitive (GTK_WIDGET (gtk_builder_get_object (priv->builder, "usercert-button")), enabled && cert);
 	gtk_widget_set_sensitive (GTK_WIDGET (gtk_builder_get_object (priv->builder, "userkey-label")), enabled && key);
@@ -423,6 +424,10 @@ init_plugin_ui (StrongswanPluginUiWidget *self, NMConnection *connection, GError
 
 	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "passwd-show"));
 	g_signal_connect (G_OBJECT (widget), "toggled", G_CALLBACK (show_toggled_cb), self);
+
+	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "ask-cert"));
+	//g_signal_connect (G_OBJECT (widget), "toggled", G_CALLBACK (show_toggled_cb), self);
+
 	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "passwd-entry"));
 	value = nm_setting_vpn_get_secret (settings, "password");
 	if (value)
