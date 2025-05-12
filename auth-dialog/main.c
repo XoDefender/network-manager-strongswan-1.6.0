@@ -106,9 +106,9 @@ static void keyfile_print_stdout (GKeyFile *keyfile)
 	g_free (data);
 }
 
-static gboolean get_secrets(const char *type, const char *cert_source, const char *uuid, const char *name,
-							gboolean retry, gboolean allow_interaction, gboolean external_ui_mode,
-							const char *in_pw, char **out_pw, NMSettingSecretFlags flags)
+static gboolean get_secrets(const char *type, const char *cert_source, const char *ask_cert, 
+							const char *uuid, const char *name, gboolean retry, gboolean allow_interaction, 
+							gboolean external_ui_mode, const char *in_pw, char **out_pw, NMSettingSecretFlags flags)
 {
 	NMAVpnPasswordDialog *dialog;
 	char *prompt, *pw = NULL;
@@ -169,7 +169,12 @@ static gboolean get_secrets(const char *type, const char *cert_source, const cha
 		// TODO:Kirill - need to read data from plugin editor
 		// and fill keyfile according to it - pass cert to show 
 		// nma cert dialog
-		keyfile_add_entry_info (keyfile, "password", pw ?: "", _("Password:"), TRUE, allow_interaction);
+		if(!strcmp(ask_cert, "yes")) {
+			keyfile_add_entry_info (keyfile, "cert", "", _("Certificate:"), TRUE, allow_interaction);
+		}
+		else {
+			keyfile_add_entry_info (keyfile, "password", pw ?: "", _("Password:"), TRUE, allow_interaction);
+		}
 
 		keyfile_print_stdout (keyfile);
 		g_key_file_unref (keyfile);
@@ -363,8 +368,9 @@ int main (int argc, char *argv[])
 		!strcmp(type, "psk"))
 	{
 		nm_vpn_service_plugin_get_secret_flags (secrets, "password", &flags);
-		if (!get_secrets(type, cert_source, uuid, name, retry, allow_interaction,
-						 external_ui_mode, g_hash_table_lookup (secrets, "password"), &pass, flags))
+		if (!get_secrets(type, cert_source, g_hash_table_lookup (data, "ask-cert"), uuid, name, retry, 
+						allow_interaction, external_ui_mode, g_hash_table_lookup (secrets, "password"), 
+						&pass, flags))
 		{
 			status = 1;
 		}
