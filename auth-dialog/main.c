@@ -106,7 +106,7 @@ static void keyfile_print_stdout (GKeyFile *keyfile)
 	g_free (data);
 }
 
-static gboolean get_secrets(const char *type, const char *cert_source, const char *ask_cert, 
+static gboolean get_secrets(const char *type, const char *cert_source, const char *ask_cert_on_connect, 
 							const char *uuid, const char *name, gboolean retry, gboolean allow_interaction, 
 							gboolean external_ui_mode, const char *in_pw, char **out_pw, NMSettingSecretFlags flags)
 {
@@ -166,14 +166,9 @@ static gboolean get_secrets(const char *type, const char *cert_source, const cha
 		g_key_file_set_string (keyfile, UI_KEYFILE_GROUP, "Description", prompt);
 		g_key_file_set_string (keyfile, UI_KEYFILE_GROUP, "Title", _("Authenticate VPN"));
 
-		// TODO:Kirill - need to read data from plugin editor
-		// and fill keyfile according to it - pass cert to show 
-		// nma cert dialog
-		if(!strcmp(ask_cert, "yes")) {
-			keyfile_add_entry_info (keyfile, "cert", "", _("Certificate:"), TRUE, allow_interaction);
-		}
-		else {
-			keyfile_add_entry_info (keyfile, "password", pw ?: "", _("Password:"), TRUE, allow_interaction);
+		keyfile_add_entry_info (keyfile, "password", pw ?: "", _("Password:"), TRUE, allow_interaction);
+		if(!strcmp(ask_cert_on_connect, "yes") && !strcmp(cert_source, "smartcard")) {
+			keyfile_add_entry_info (keyfile, "usercert-id", "", _("Certificate:"), TRUE, allow_interaction);
 		}
 
 		keyfile_print_stdout (keyfile);
@@ -368,7 +363,7 @@ int main (int argc, char *argv[])
 		!strcmp(type, "psk"))
 	{
 		nm_vpn_service_plugin_get_secret_flags (secrets, "password", &flags);
-		if (!get_secrets(type, cert_source, g_hash_table_lookup (data, "ask-cert"), uuid, name, retry, 
+		if (!get_secrets(type, cert_source, g_hash_table_lookup (data, "ask-cert-on-connect"), uuid, name, retry, 
 						allow_interaction, external_ui_mode, g_hash_table_lookup (secrets, "password"), 
 						&pass, flags))
 		{

@@ -465,8 +465,8 @@
               </packing>
             </child>
              <child>
-              <object class="GtkCheckButton" id="ask-cert">
-                <property name="label" translatable="yes">_Ask certificate on connect</property>
+              <object class="GtkCheckButton" id="ask-cert-on-connect">
+                <property name="label" translatable="yes">_Ask smartcard certificate on connect</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">False</property>

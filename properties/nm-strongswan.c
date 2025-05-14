@@ -161,7 +161,7 @@ static void update_pass_field (StrongswanPluginUiWidgetPrivate *priv, gboolean e
 static void update_cert_fields (StrongswanPluginUiWidgetPrivate *priv, gboolean enabled)
 {
 	GtkWidget *widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "cert-combo"));
-	gboolean cert = FALSE, key = FALSE;
+	gboolean cert = FALSE, key = FALSE, cert_pkcs11 = FALSE;
 
 	switch (gtk_combo_box_get_active (GTK_COMBO_BOX (widget)))
 	{
@@ -176,16 +176,17 @@ static void update_cert_fields (StrongswanPluginUiWidgetPrivate *priv, gboolean 
 			cert = TRUE;
 			break;
 		case 2:
+			cert_pkcs11 = TRUE;
 			break;
 	}
 
 	gtk_widget_set_sensitive (GTK_WIDGET (gtk_builder_get_object (priv->builder, "cert-label")), enabled);
 	gtk_widget_set_sensitive (GTK_WIDGET (gtk_builder_get_object (priv->builder, "cert-combo")), enabled);
-	gtk_widget_set_sensitive (GTK_WIDGET (gtk_builder_get_object (priv->builder, "ask-cert")), enabled);
 	gtk_widget_set_sensitive (GTK_WIDGET (gtk_builder_get_object (priv->builder, "usercert-label")), enabled && cert);
 	gtk_widget_set_sensitive (GTK_WIDGET (gtk_builder_get_object (priv->builder, "usercert-button")), enabled && cert);
 	gtk_widget_set_sensitive (GTK_WIDGET (gtk_builder_get_object (priv->builder, "userkey-label")), enabled && key);
 	gtk_widget_set_sensitive (GTK_WIDGET (gtk_builder_get_object (priv->builder, "userkey-button")), enabled && key);
+	gtk_widget_set_sensitive (GTK_WIDGET (gtk_builder_get_object (priv->builder, "ask-cert-on-connect")), cert_pkcs11);
 }
 
 static void update_sensitive (StrongswanPluginUiWidgetPrivate *priv)
@@ -425,13 +426,11 @@ init_plugin_ui (StrongswanPluginUiWidget *self, NMConnection *connection, GError
 	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "passwd-show"));
 	g_signal_connect (G_OBJECT (widget), "toggled", G_CALLBACK (show_toggled_cb), self);
 
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "ask-cert"));
-	value = nm_setting_vpn_get_data_item (settings, "ask-cert");
-	if (value && strcmp(value, "yes") == 0)
-	{
+	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "ask-cert-on-connect"));
+	value = nm_setting_vpn_get_data_item (settings, "ask-cert-on-connect");
+	if (value && strcmp(value, "yes") == 0) {
 		gtk_check_button_set_active(GTK_CHECK_BUTTON(widget), TRUE);
 	}
-	//g_signal_connect (G_OBJECT (widget), "toggled", G_CALLBACK (settings_changed_cb), self);
 
 	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "passwd-entry"));
 	value = nm_setting_vpn_get_secret (settings, "password");
@@ -735,9 +734,9 @@ update_connection (NMVpnEditor *iface,
 	active = gtk_check_button_get_active(GTK_CHECK_BUTTON(widget));
 	nm_setting_vpn_add_data_item (settings, "proposal", active ? "yes" : "no");
 
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "ask-cert"));
+	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "ask-cert-on-connect"));
 	active = gtk_check_button_get_active(GTK_CHECK_BUTTON(widget));
-	nm_setting_vpn_add_data_item (settings, "ask-cert", active ? "yes" : "no");
+	nm_setting_vpn_add_data_item (settings, "ask-cert-on-connect", active ? "yes" : "no");
 
 	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "ike-entry"));
 	str = (char *) gtk_editable_get_text (GTK_EDITABLE (widget));
