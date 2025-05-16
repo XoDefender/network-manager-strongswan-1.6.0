@@ -737,6 +737,7 @@ update_connection (NMVpnEditor *iface,
 	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "ask-cert-on-connect"));
 	active = gtk_check_button_get_active(GTK_CHECK_BUTTON(widget));
 	nm_setting_vpn_add_data_item (settings, "ask-cert-on-connect", active ? "yes" : "no");
+	nm_setting_set_secret_flags (NM_SETTING (settings), "usercert-id", NM_SETTING_SECRET_FLAG_NOT_SAVED, NULL);
 
 	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "ike-entry"));
 	str = (char *) gtk_editable_get_text (GTK_EDITABLE (widget));
