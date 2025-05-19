@@ -686,10 +686,11 @@ save_cert_chooser (NMSettingVpn *settings, GtkBuilder *builder,
 	GtkWidget *chooser;
 	gchar *uri;
 	gchar *id_bytes;
+	NMSetting8021xCKScheme scheme;
 
 	chooser = GTK_WIDGET (gtk_builder_get_object (builder, name));
-	uri = nma_cert_chooser_get_cert_uri (NMA_CERT_CHOOSER (chooser));
-	if(uri) 
+    uri = nma_cert_chooser_get_cert (NMA_CERT_CHOOSER (chooser), &scheme);
+	if(uri && scheme == NM_SETTING_802_1X_CK_SCHEME_PKCS11) 
 	{
 		id_bytes = nma_cert_chooser_get_cert_id (NMA_CERT_CHOOSER (chooser), uri);
 

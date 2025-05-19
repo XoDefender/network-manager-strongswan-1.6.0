@@ -466,7 +466,7 @@
             </child>
              <child>
               <object class="GtkCheckButton" id="ask-cert-on-connect">
-                <property name="label" translatable="yes">_Ask smartcard certificate on connect</property>
+                <property name="label" translatable="yes">Запрашивать сертификат с токена при подключении</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">False</property>
