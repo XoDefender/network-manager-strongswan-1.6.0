@@ -1,18 +1,8 @@
-network-manager-strongswan (1.6.0-1+deb12u1) bookworm; urgency=medium
+network-manager-strongswan (1.5.2-1astra1) unstable; urgency=medium
 
-  [ Harald Dunkel ]
-  * Build editor component with GTK 4, too (fix provided by Moritz Schlarb)
-    (Closes: #1020495, #1036607)
+  * Add rbt-add-token-cert-chooser.patch
 
- -- Harald Dunkel <harri@afaics.de>  Sun, 11 Jun 2023 10:20:41 +0200
-
-network-manager-strongswan (1.6.0-1) unstable; urgency=medium
-
-  * new upstream version 1.6.0:
-   This version supports GTK 4 (in addition to GTK 3), but doesn't
-   support compiling against libnm-glib anymore.
-
- -- Harald Dunkel <harri@afaics.de>  Sat, 16 Jul 2022 14:07:25 +0200
+ -- Kirill Zhilnikov <kzhilnikov@astralinux.ru>  Fri, 07 Jun 2024 16:30:24 +0300
 
 network-manager-strongswan (1.5.2-1) unstable; urgency=medium
 

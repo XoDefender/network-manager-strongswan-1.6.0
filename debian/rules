@@ -4,7 +4,7 @@
 	dh $@ --with autoreconf
 
 override_dh_auto_configure:
-	dh_auto_configure -- --with-gtk4 --without-libnm-glib --with-charon=/usr/lib/ipsec/charon-nm --libexecdir="\$$(prefix)/lib/NetworkManager"
+	dh_auto_configure -- --without-libnm-glib --with-charon=/usr/lib/ipsec/charon-nm --libexecdir="\$$(prefix)/lib/NetworkManager"
 
 override_dh_clean:
 	dh_clean -XNetworkManager-strongswan.metainfo.xml nm-strongswan-service.name

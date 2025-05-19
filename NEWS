@@ -1,9 +1,3 @@
-NetworkManager-strongswan-1.6.0
--------------------------------
-
-- Support for GTK 4
-- Removed libnm-glib compatibility
-
 NetworkManager-strongswan-1.5.2
 -------------------------------
 

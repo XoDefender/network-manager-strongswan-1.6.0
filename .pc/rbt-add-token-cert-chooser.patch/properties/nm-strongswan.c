@@ -36,7 +36,6 @@
 #else
 #include <NetworkManager.h>
 #include <nma-ui-utils.h>
-#include <nma-cert-chooser.h>
 #endif
 
 #include "nm-strongswan.h"
@@ -171,7 +170,7 @@ static void update_pass_field (StrongswanPluginUiWidgetPrivate *priv, gboolean e
 static void update_cert_fields (StrongswanPluginUiWidgetPrivate *priv, gboolean enabled)
 {
 	GtkWidget *widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "cert-combo"));
-	gboolean cert = FALSE, key = FALSE, cert_pkcs11 = FALSE;
+	gboolean cert = FALSE, key = FALSE;
 
 	switch (gtk_combo_box_get_active (GTK_COMBO_BOX (widget)))
 	{
@@ -186,7 +185,6 @@ static void update_cert_fields (StrongswanPluginUiWidgetPrivate *priv, gboolean 
 			cert = TRUE;
 			break;
 		case 2:
-			cert_pkcs11 = TRUE;
 			break;
 	}
 
@@ -196,14 +194,11 @@ static void update_cert_fields (StrongswanPluginUiWidgetPrivate *priv, gboolean 
 	gtk_widget_set_sensitive (GTK_WIDGET (gtk_builder_get_object (priv->builder, "usercert-button")), enabled && cert);
 	gtk_widget_set_sensitive (GTK_WIDGET (gtk_builder_get_object (priv->builder, "userkey-label")), enabled && key);
 	gtk_widget_set_sensitive (GTK_WIDGET (gtk_builder_get_object (priv->builder, "userkey-button")), enabled && key);
-
-	gtk_widget_set_visible   (GTK_WIDGET (gtk_builder_get_object (priv->builder, "user-cert-chooser")), cert_pkcs11);
 }
 
 static void update_sensitive (StrongswanPluginUiWidgetPrivate *priv)
 {
 	GtkWidget *widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "method-combo"));
-	GtkWidget *cert_chooser = GTK_WIDGET(gtk_builder_get_object (priv->builder, "user-cert-chooser"));
 
 	switch (gtk_combo_box_get_active (GTK_COMBO_BOX (widget)))
 	{
@@ -214,7 +209,6 @@ static void update_sensitive (StrongswanPluginUiWidgetPrivate *priv)
 			update_user_field (priv, TRUE);
 			update_pass_field (priv, TRUE);
 			update_cert_fields (priv, FALSE);
-			gtk_widget_hide(cert_chooser);
 			break;
 		case 1:
 		case 2:
@@ -226,12 +220,9 @@ static void update_sensitive (StrongswanPluginUiWidgetPrivate *priv)
 			update_user_field (priv, FALSE);
 			update_pass_field (priv, TRUE);
 			update_cert_fields (priv, FALSE);
-			gtk_widget_hide(cert_chooser);
 			break;
 	}
-#ifdef NM_VPN_LIBNM_COMPAT
-gtk_widget_hide(cert_chooser);
-#endif
+
 }
 
 static void
@@ -311,17 +302,6 @@ init_password_icon (StrongswanPluginUiWidget *self, NMSettingVpn *settings,
 					  G_CALLBACK (password_storage_changed_cb), self);
 }
 
-static void 
-nma_cert_chooser_realize_cb(GtkWidget *chooser, gpointer data) 
-{
-#ifndef NM_VPN_LIBNM_COMPAT
-	gtk_widget_set_visible(chooser, *(gboolean*)data);
-#else
-	gtk_widget_set_visible(chooser, FALSE);
-#endif
-	g_free(data);
-}
-
 static gboolean
 init_plugin_ui (StrongswanPluginUiWidget *self, NMConnection *connection, GError **error)
 {
@@ -329,8 +309,6 @@ init_plugin_ui (StrongswanPluginUiWidget *self, NMConnection *connection, GError
 	NMSettingVpn *settings;
 	GtkWidget *widget;
 	const char *value, *method;
-	gboolean *show_cert_chooser = g_new(gboolean, 1);
-	*show_cert_chooser = FALSE;
 
 	settings = NM_SETTING_VPN(nm_connection_get_setting(connection, NM_TYPE_SETTING_VPN));
 
@@ -433,7 +411,6 @@ init_plugin_ui (StrongswanPluginUiWidget *self, NMConnection *connection, GError
 		}
 		if (g_strcmp0 (value, "smartcard") == 0) {
 			gtk_combo_box_set_active (GTK_COMBO_BOX (widget), 2);
-			*show_cert_chooser = TRUE;
 		}
 	}
 	if (gtk_combo_box_get_active (GTK_COMBO_BOX (widget)) == -1)
@@ -507,21 +484,6 @@ init_plugin_ui (StrongswanPluginUiWidget *self, NMConnection *connection, GError
 	}
 	g_signal_connect (G_OBJECT (widget), "changed", G_CALLBACK (settings_changed_cb), self);
 
-
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "user-cert-chooser"));
-#ifndef NM_VPN_LIBNM_COMPAT
-	value = nm_setting_vpn_get_data_item (settings, "usercert-uri");
-	if(value) {
-		nma_cert_chooser_set_cert_uri(NMA_CERT_CHOOSER(widget), value);
-	}
-	nma_cert_chooser_setup_cert_password_storage (NMA_CERT_CHOOSER(widget),
-	                                              NM_SETTING_SECRET_FLAG_NOT_REQUIRED, 
-												  (NMSetting *)settings, 
-												  NM_SETTING_802_1X_CLIENT_CERT_PASSWORD,
-	                                              TRUE, NMA_CERT_CHOOSER_FLAG_PASSWORDS);
-#endif
-	g_signal_connect(widget, "realize", G_CALLBACK(nma_cert_chooser_realize_cb), show_cert_chooser);
-
 	return TRUE;
 }
 
@@ -565,63 +527,10 @@ save_password_and_flags (NMSettingVpn *settings, GtkBuilder *builder,
 	nm_setting_set_secret_flags (NM_SETTING (settings), secret_key, flags, NULL);
 }
 
-static void
-format_some_bytes (GString *output, gconstpointer bytes, gulong length)
-{
-	guchar ch;
-	const guchar *data = bytes;
-	gulong i;
-
-	if (bytes == NULL) {
-		g_string_append (output, "NULL");
-		return;
-	}
-
-	for (i = 0; i < length && i < 128; i++) {
-		ch = data[i];
-		if(i) {
-			g_string_append (output, ":");
-		}
-		g_string_append_printf (output, "%02x", ch);
-	}
-}
-
-#ifndef NM_VPN_LIBNM_COMPAT
-static void
-save_cert_chooser (NMSettingVpn *settings, GtkBuilder *builder,
-				   const char *name, const char *key_id, const char *key_uri) 
-{
-	GtkWidget *chooser;
-	gchar *uri;
-	gchar *id_bytes;
-
-	chooser = GTK_WIDGET (gtk_builder_get_object (builder, name));
-	uri = nma_cert_chooser_get_cert_uri (NMA_CERT_CHOOSER (chooser));
-	if(uri) 
-	{
-		id_bytes = nma_cert_chooser_get_cert_id (NMA_CERT_CHOOSER (chooser), uri);
-
-		if(id_bytes) 
-		{
-			ulong id_length = *(ulong*)id_bytes;
-			GString* id_formated = g_string_new(NULL);
-			format_some_bytes(id_formated, id_bytes + sizeof(id_length), id_length);
-
-			nm_setting_vpn_add_data_item (settings, key_id, id_formated->str);
-			nm_setting_vpn_add_data_item (settings, key_uri, uri);
-			
-			g_string_free(id_formated, TRUE);
-			g_free(id_bytes);
-		}
-		
-		g_free(uri);
-	}
-}
-#endif
 
 static void
 save_file_chooser (NMSettingVpn *settings, GtkBuilder *builder,
-				   const char *name, const char *key) 
+				   const char *name, const char *key)
 {
 	GtkWidget *chooser;
 	char *str;
@@ -651,7 +560,7 @@ static void
 save_cert (NMSettingVpn *settings, GtkBuilder *builder)
 {
 	GtkWidget *widget;
-	gboolean cert = FALSE, key = FALSE, cert_pkcs11 = FALSE;
+	gboolean cert = FALSE, key = FALSE;
 	char *str;
 
 	widget = GTK_WIDGET (gtk_builder_get_object (builder, "cert-combo"));
@@ -671,18 +580,11 @@ save_cert (NMSettingVpn *settings, GtkBuilder *builder)
 		case 2:
 			nm_setting_set_secret_flags (NM_SETTING (settings), "password",
 										 NM_SETTING_SECRET_FLAG_NOT_SAVED, NULL);
-			cert_pkcs11 = TRUE;
 			str = "smartcard";
 			break;
 	}
-
 	nm_setting_vpn_add_data_item (settings, "cert-source", str);
 
-#ifndef NM_VPN_LIBNM_COMPAT
-	if(cert_pkcs11) {
-		save_cert_chooser(settings, builder, "user-cert-chooser", "usercert-id", "usercert-uri");
-	}
-#endif
 	if (cert) {
 		save_file_chooser (settings, builder, "usercert-button", "usercert");
 	}
