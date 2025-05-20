@@ -391,7 +391,7 @@ init_plugin_ui (StrongswanPluginUiWidget *self, NMConnection *connection, GError
 	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "ask-cert-on-connect"));
 	value = nm_setting_vpn_get_data_item (settings, "ask-cert-on-connect");
 	if (value && strcmp(value, "yes") == 0) {
-		gtk_check_button_set_active(GTK_CHECK_BUTTON(widget), TRUE);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
 	}
 
 	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "method-combo"));
@@ -765,7 +765,7 @@ update_connection (NMVpnEditor *iface,
 	nm_setting_vpn_add_data_item (settings, "proposal", active ? "yes" : "no");
 
 	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "ask-cert-on-connect"));
-	active = gtk_check_button_get_active(GTK_CHECK_BUTTON(widget));
+	active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 	str = (char *) nm_setting_vpn_get_data_item (settings, "cert-source");
 	nm_setting_vpn_add_data_item (settings, "ask-cert-on-connect", active ? "yes" : "no");
 	if(str && !strcmp(str, "smartcard")) 
